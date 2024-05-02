@@ -104,7 +104,7 @@ def video_preprocess(src, dst):
                     crop_video(input_path, output_path)
                     # 获取视频编号，并修改info，将修改后的info添加到new_info中
                     clip_i = int((clip[5:])[:-4])
-                    info.loc[clip_i, 'end_time'] = info.loc[clip_i, 'start_time'] + 2
+                    info.loc[clip_i, 'end_time'] = info.loc[clip_i, 'start_time'] + DURATION
                     new_info = new_info._append(info.loc[clip_i])
 
             # 如果视频大于2s，另作处理
