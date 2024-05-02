@@ -1,6 +1,12 @@
 scipy=1.13.0
+xformers=0.0.27
+
+torch=2.3.0+cu121
+torchvision=0.18.0+cu121
 
 # 裁剪视频
 pandas=2.2.2
 scikit-image=0.23.2
 opencv-python=4.9.0.80
+
+tqdm-4.66.2
