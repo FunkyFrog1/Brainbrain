@@ -89,16 +89,19 @@ def video_preprocess(src, dst):
 
         # 用这个来存储新的info文件，过滤没有用的info
         new_info = pd.DataFrame({})
+        info_save_path = os.path.join(dst, 'info')
+        if not os.path.exists(info_save_path):
+            os.makedirs(info_save_path)
 
         for clips in os.listdir(movie_path):
-            # 如果是2-3s，就裁切前2s
+            # 如果是1-2s，就裁切前1s
             if clips == '1_2s':
                 clips_path = os.path.join(movie_path, clips)
                 for clip in os.listdir(clips_path):
                     # 获取输入路径
                     input_path = os.path.join(clips_path, clip)
                     # 获取输出路径
-                    output_path = os.path.join(dst, os.path.relpath(input_path, src))
+                    output_path = os.path.join(dst, os.path.relpath(os.path.join(movie_path, clip), src))
                     # 裁剪视频
                     crop_video(input_path, output_path)
                     # 获取视频编号，并修改info，将修改后的info添加到new_info中
@@ -106,21 +109,23 @@ def video_preprocess(src, dst):
                     info.loc[clip_i, 'end_time'] = info.loc[clip_i, 'start_time'] + 2
                     new_info = new_info._append(info.loc[clip_i])
 
-            # 如果视频大于3s，另作处理
+            # 如果视频大于2s，另作处理
             elif (clips == '2_3s') or (clips == '3+s'):
                 clips_path = os.path.join(movie_path, clips)
                 for clip in os.listdir(clips_path):
                     # 获取输入路径
                     input_path = os.path.join(clips_path, clip)
                     # 获取输出路径
-                    output_path = os.path.join(dst, os.path.relpath(clips_path, src))
+                    output_path = os.path.join(dst, os.path.relpath(movie_path, src))
                     # 获取视频编号
                     clip_i = int((clip[5:])[:-4])
+                    # 序列式裁切
                     attach_info = sequential_cutting(input_path, output_path, clip_i, info)
                     new_info = pd.concat([new_info, attach_info], ignore_index=True)
 
-        # 保存新的info.csv        
-        new_info.to_csv(os.path.join(dst, movie, 'info.csv'), index=False)
+        # 保存新的info.csv到info文件夹
+        # new_info.to_csv(os.path.join(dst, movie, 'info.csv'), index=False)
+        new_info.to_csv(os.path.join(info_save_path, f'{movie}_info.csv'), index=False)
 
 
 def main():
