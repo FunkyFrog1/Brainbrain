@@ -1,12 +1,9 @@
 import os
-import cv2
-import shutil
-import pandas as pd
 import subprocess
 
-from skimage import transform, util
-import numpy as np
-
+import cv2
+import pandas as pd
+from skimage import transform
 
 # 设置裁切时长
 DURATION = 1
@@ -31,7 +28,7 @@ def get_video_crop(file_path):
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     cap.release()
-    crop = [height, (width-height)/2]
+    crop = [height, (width - height) / 2]
     return crop
 
 
@@ -45,6 +42,7 @@ def crop_video(input_path, output_path):
     subprocess.call(command, shell=True)
 
 
+# 序列式裁切
 def sequential_cutting(input_path, output_path, clip_i, info, interval=INTERVAL):
     # 获取开始结束时间
     start_time = info.loc[clip_i, 'start_time']
@@ -59,7 +57,7 @@ def sequential_cutting(input_path, output_path, clip_i, info, interval=INTERVAL)
     while pointer + DURATION <= end_time:
         cutting_list.append(pointer - start_time)
         pointer += interval
-    
+
     # 用attach_info来保存新的信息
     attach_info = pd.DataFrame({})
     # 序列式裁切视频
@@ -75,9 +73,9 @@ def sequential_cutting(input_path, output_path, clip_i, info, interval=INTERVAL)
         attach_info = attach_info._append(df, ignore_index=True)
 
     # 返回需要添加的info
-    #print(attach_info)
+    # print(attach_info)
     return attach_info
-        
+
 
 # 视频预处理
 def video_preprocess(src, dst):
@@ -85,7 +83,7 @@ def video_preprocess(src, dst):
 
         # 读取info文件
         movie_path = os.path.join(src, movie)
-        info = pd.read_csv(os.path.join(movie_path, 'info.csv'), dtype={'clip_i':str})
+        info = pd.read_csv(os.path.join(movie_path, 'info.csv'), dtype={'clip_i': str})
 
         # 用这个来存储新的info文件，过滤没有用的info
         new_info = pd.DataFrame({})
