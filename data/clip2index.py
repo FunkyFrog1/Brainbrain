@@ -13,8 +13,8 @@ def get_seeg_index(time_info_path, save_path):
         df = pd.read_csv(file_path)
 
         # 执行计算并保留整数部分
-        df['index_start'] = (df['start_time'] * 500).astype(int)
-        df['index_end'] = (df['end_time'] * 500).astype(int)
+        df['index_start'] = (df['start_time'] * 2000).astype(int)
+        df['index_end'] = (df['end_time'] * 2000).astype(int)
 
         # 删除原始的 'start_time' 和 'end_time' 列
         df.drop(['start_time', 'end_time'], axis=1, inplace=True)

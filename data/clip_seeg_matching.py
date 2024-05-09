@@ -1,9 +1,6 @@
 import os
 import numpy as np
 from PIL import Image
-from tqdm import tqdm
-import torch
-from sklearn.model_selection import train_test_split
 import h5py
 
 
@@ -61,16 +58,10 @@ def split_data(data_list, train_indices, test_indices):
 # 遍历所有seeg数据 与first_frame进行对齐
 def clip_seeg_matching(movie_nums, sub_dir, sub_num):
     data_list = [[],[],[],[],[],[]]
-    bad_data = 0
     for movie_num in movie_nums:
         for file in os.listdir(os.path.join(sub_dir, f'movie_{movie_num}')):
             # 加载seeg数据
             seeg_matrix = np.load(os.path.join(sub_dir, f'movie_{movie_num}', file))
-
-            if seeg_matrix.shape[1] != 500:
-                print(seeg_matrix.shape)
-                bad_data += 1
-                continue
 
             # 归一化seeg数据
             seeg_matrix = np.array(normalize(seeg_matrix).astype(np.float32))
@@ -92,7 +83,6 @@ def clip_seeg_matching(movie_nums, sub_dir, sub_num):
             data_list[4].append(clip_num_sub)
             data_list[5].append(watch_flag)
 
-    print(bad_data)
 
     # 总样本个数
     n_samples = len(data_list[0])
@@ -113,7 +103,7 @@ def clip_seeg_matching(movie_nums, sub_dir, sub_num):
     # print(type(test_data_list[5][0]))
 
     # 将训练集存储到一个新的hdf5文件
-    with h5py.File(f'sub_{sub_num}_data.h5', 'w') as f:
+    with h5py.File(f'./paired_data/sub_{sub_num}_data.h5', 'w') as f:
         for i, name in enumerate(['seeg', 'first_frame', 'movie_num', 'clip', 'clip_sub', 'watch_flag']):
             f.create_dataset(name, data=data_list[i])
 
