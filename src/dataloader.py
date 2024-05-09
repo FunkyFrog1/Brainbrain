@@ -1,4 +1,5 @@
 import h5py
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
@@ -80,13 +81,6 @@ def test():
     # # 遍历DataLoader
     for batch in tqdm(train_loader):
         seeg, first_frame, movie_num, clip, clip_sub, watch_flag = batch
-        print(seeg.shape)
-        print(first_frame.shape)
-        print(movie_num)
-        print(clip)
-        print(clip_sub)
-        print(watch_flag)
-
         break
 
 
