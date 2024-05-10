@@ -1,8 +1,8 @@
-from models import register_model
+from BrainBERT.models import register_model
 import torch.nn as nn
-from models.base_model import BaseModel
-from models.transformer_encoder_input import TransformerEncoderInput
-from models.spec_prediction_head import SpecPredictionHead 
+from BrainBERT.models.base_model import BaseModel
+from BrainBERT.models.transformer_encoder_input import TransformerEncoderInput
+from BrainBERT.models.spec_prediction_head import SpecPredictionHead
 
 @register_model("masked_tf_model")
 class MaskedTFModel(BaseModel):
