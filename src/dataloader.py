@@ -16,7 +16,7 @@ class SeegDataset(Dataset):
         self.watch_flag = self.archive[watch_flag]
 
         self.indices = list(range(len(self.seeg)))
-        self.train_indices, self.test_indices = train_test_split(self.indices, test_size=1 - split_ratio,
+        self.train_indices, self.test_indices = train_test_split(self.indices, test_size=200,
                                                                  random_state=42)
 
     def __getitem__(self, index):
@@ -51,13 +51,12 @@ def create_dataloaders(dataset, batch_size=32, train_shuffle=True, val_shuffle=F
 
 def test():
     dataset = SeegDataset('../data/paired_data/sub_07_data.h5')
-    train_loader, val_loader = create_dataloaders(dataset=dataset, batch_size=64)
+    train_loader, val_loader = create_dataloaders(dataset=dataset, batch_size=1)
 
-    # 遍历DataLoader
+    for batch in tqdm(train_loader):
+        pass
     for batch in tqdm(val_loader):
-        seeg, first_frame, movie_num, clip, clip_sub, watch_flag = batch
-        print(seeg.shape)
-        # break
+        pass
 
 
 if __name__ == '__main__':

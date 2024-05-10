@@ -42,8 +42,9 @@ def train_fn(seeg_encoder, optimizer, loss_func, clip_processor, brainbert_proce
         train_loss_list.append(loss.item())
         optimizer.step()
 
-        if step % 20 == 0:
+        if step % 100 == 0:
             print(np.mean(train_loss_list))
+            train_loss_list = []
     return np.mean(train_loss_list)
 
 
@@ -83,7 +84,7 @@ def train(params):
     # Record loss
     training_loss_list = []
     val_loss_list = []
-    for i in tqdm(range(params['epoch'])):
+    for i in range(params['epoch']):
         train_loss = train_fn(
             seeg_encoder=seeg_encoder,
             optimizer=optimizer,
@@ -99,16 +100,19 @@ def train(params):
             brainbert_processor=brainbert_processor,
             val_loader=val_loader,
         )
-        print(f"train_loss:{train_loss.item()} val_loss:{val_loss.item()}")
+        print("Epoch", i)
+        print(f"train_loss:{train_loss.item()}")
+        print(f"val_loss:{val_loss.item()}")
         training_loss_list.append(train_loss.item())
         val_loss_list.append(val_loss.item())
+        torch.save(seeg_encoder.state_dict(), f'checkpoint{i}.pth')
 
 
 def main():
     params = {
-        'epoch': 20,
+        'epoch': 10,
         'batch': 8,
-        "lr": 4.0e-4,
+        "lr": 1.0e-6,
         "beta1": 0.9,
         "beta2": 0.98,
         "eps": 1.0e-6
