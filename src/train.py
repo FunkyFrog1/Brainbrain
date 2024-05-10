@@ -106,8 +106,8 @@ def train(params):
 
 def main():
     params = {
-        'epoch': 100,
-        'batch': 28,
+        'epoch': 20,
+        'batch': 8,
         "lr": 4.0e-4,
         "beta1": 0.9,
         "beta2": 0.98,
