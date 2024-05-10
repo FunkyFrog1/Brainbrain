@@ -9,4 +9,7 @@ pandas=2.2.2
 scikit-image=0.23.2
 opencv-python=4.9.0.80
 
-tqdm-4.66.2
+tqdm
+ftfy
+regex
+pkg_resources

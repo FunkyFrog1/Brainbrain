@@ -47,7 +47,7 @@ def load_model_weights(model, states, multi_gpu):
 
 
 def main():
-    ckpt_path = "pretrained_weights/stft_large_pretrained.pth"
+    ckpt_path = "../pretrain_weights/stft_large_pretrained.pth"
     cfg = OmegaConf.create({"upstream_ckpt": ckpt_path})
     model = build_model(cfg)
     model.to('cuda')
