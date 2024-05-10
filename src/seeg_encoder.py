@@ -107,7 +107,7 @@ class SeegEncoder(nn.Module):
         super().__init__()
         self.time_attn = TimeAttentionBlock(width=width)
         self.electrode_attn = ElectrodeAttentionBlock(width=width)
-        self.ln = LayerNorm(width)
+        # self.ln = LayerNorm(width)
 
     def forward(self, x):
         x_list = []
@@ -118,7 +118,6 @@ class SeegEncoder(nn.Module):
 
         x = torch.stack(x_list, dim=1)
         x = self.electrode_attn(x)
-        print(x.shape)
 
         return x
 

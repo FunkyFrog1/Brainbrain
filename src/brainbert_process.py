@@ -1,4 +1,4 @@
-import models
+from BrainBERT import models
 import torch
 from omegaconf import OmegaConf
 import numpy as np
@@ -46,27 +46,27 @@ def load_model_weights(model, states, multi_gpu):
         model.load_weights(states)
 
 
-def main():
+def brainbert_process(wav):
+    device = wav.device
+    wav = wav.cpu().numpy()
     ckpt_path = "../pretrain_weights/stft_large_pretrained.pth"
     cfg = OmegaConf.create({"upstream_ckpt": ckpt_path})
     model = build_model(cfg)
-    model.to('cuda')
+    model.to(device)
     model.eval()
     init_state = torch.load(ckpt_path)
     load_model_weights(model, init_state['model'], False)
 
-    wav = np.load("example_data.npy")[0][0][:2000]
+    inputs = []
+    for i in range(wav.shape[0]):
+        f, t, linear = get_stft(wav[i], 2000, clip_fs=40, nperseg=400, noverlap=350, normalizing="zscore",
+                                return_onesided=True)  # TODO hardcode sampling rate
+        inputs.append(torch.FloatTensor(linear).transpose(0, 1).to(device))
+    inputs = torch.stack(inputs, dim=0).half()
 
-    f, t, linear = get_stft(wav, 2000, clip_fs=40, nperseg=400, noverlap=350, normalizing="zscore",
-                            return_onesided=True)  # TODO hardcode sampling rate
-    inputs = torch.FloatTensor(linear).unsqueeze(0).transpose(1, 2).to('cuda')
-    mask = torch.zeros((inputs.shape[:2])).bool().to('cuda')
+    mask = torch.zeros((inputs.shape[:2])).bool().to(device)
     with torch.no_grad():
-        output = model.forward(inputs, mask, intermediate_rep=True)
+        with torch.autocast(device_type='cuda', dtype=torch.float16):
+            output = model.forward(inputs, mask, intermediate_rep=True)
 
-    print("input shape: ", inputs.shape)
-    print("output shape: ", output.shape)
-
-
-if __name__ == '__main__':
-    main()
+    return output
