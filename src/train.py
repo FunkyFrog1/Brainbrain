@@ -5,12 +5,14 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 from functools import partial
+from loguru import logger
 
 from brainbert_process import BrainBERTProcessor
 from clip_process import ClipProcessor
 from dataloader import create_dataloaders, SeegDataset
 from seeg_encoder import SeegEncoder
 mse_loss = MSELoss()
+
 
 def set_seed(seed):
     torch.manual_seed(seed)
@@ -115,13 +117,21 @@ def main():
         "lr": 1.0e-6,
         "beta1": 0.9,
         "beta2": 0.98,
-        "eps": 1.0e-6
+        "eps": 1.0e-6,
     }
-    train(params)
+
+    for key in params:
+        logger.info(key.ljust(20)+str(params[key]).ljust(20))
+
+    # train(params)
 
 
 if __name__ == '__main__':
+    train_name = "baseline_test"
+    logger.add(f'../log/{train_name}.log', format="{time:YYYY-MM-DD HH:MM:SS} | {level} | {message}")
+    logger.info("train name".ljust(20)+train_name.ljust(20))
+
     device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
-    print('device:', device)
+    logger.info("device".ljust(20)+str(device).ljust(20))
     set_seed(42)
     main()
