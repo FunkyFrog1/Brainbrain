@@ -45,7 +45,7 @@ def train_fn(seeg_encoder, optimizer, loss_func, clip_processor, brainbert_proce
         optimizer.step()
 
         if step % 100 == 0:
-            print(np.mean(train_loss_list))
+            logger.info(np.mean(train_loss_list))
             train_loss_list = []
     return np.mean(train_loss_list)
 
@@ -66,7 +66,7 @@ def val_fn(seeg_encoder, loss_func, clip_processor, brainbert_processor, val_loa
     return np.mean(val_loss_list)
 
 
-def train(params):
+def train(params, train_name):
     dataset = SeegDataset('../data/paired_data/sub_07_data.h5')
     train_loader, val_loader = create_dataloaders(dataset=dataset, batch_size=params['batch'])
 
@@ -102,36 +102,36 @@ def train(params):
             brainbert_processor=brainbert_processor,
             val_loader=val_loader,
         )
-        print("Epoch", i)
-        print(f"train_loss:{train_loss.item()}")
-        print(f"val_loss:{val_loss.item()}")
+        logger.info(f"Epoch {i} | train_loss:{train_loss.item()} | val_loss:{val_loss.item()}")
+
         training_loss_list.append(train_loss.item())
         val_loss_list.append(val_loss.item())
-        torch.save(seeg_encoder.state_dict(), f'checkpoint{i}.pth')
+
+        torch.save(seeg_encoder.state_dict(), f'../log/{train_name}/checkpoint{i}.pth')
+        logger.info(f"save checkpoint in ../log/{train_name}/checkpoint{i}.pth")
 
 
 def main():
+    train_name = "baseline_test"
+    logger.add(f'../log/train_name/{train_name}.log', format="{time:YYYY-MM-DD HH:MM:SS} | {level} | \t{message}")
+    logger.info("train name".ljust(20) + train_name.ljust(20))
+
     params = {
-        'epoch': 10,
+        'epoch': 1,
         'batch': 8,
         "lr": 1.0e-6,
         "beta1": 0.9,
         "beta2": 0.98,
         "eps": 1.0e-6,
-    }
 
+    }
     for key in params:
         logger.info(key.ljust(20)+str(params[key]).ljust(20))
 
-    # train(params)
+    train(params, train_name)
 
 
 if __name__ == '__main__':
-    train_name = "baseline_test"
-    logger.add(f'../log/{train_name}.log', format="{time:YYYY-MM-DD HH:MM:SS} | {level} | {message}")
-    logger.info("train name".ljust(20)+train_name.ljust(20))
-
     device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
-    logger.info("device".ljust(20)+str(device).ljust(20))
     set_seed(42)
     main()
