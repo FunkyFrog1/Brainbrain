@@ -36,15 +36,15 @@ class SeegDataset(Dataset):
         self.archive.close()
 
 
-def create_dataloaders(dataset, batch_size=32, train_shuffle=True, val_shuffle=False):
+def create_dataloaders(dataset, train_batch=32, val_batch=20, train_shuffle=True, val_shuffle=False):
     train_indices = dataset.train_indices
     val_indices = dataset.test_indices
 
     train_sampler = SubsetRandomSampler(train_indices)
     val_sampler = SequentialSampler(val_indices)
 
-    train_loader = DataLoader(dataset, batch_size=batch_size, sampler=train_sampler)
-    val_loader = DataLoader(dataset, batch_size=batch_size, sampler=val_sampler)
+    train_loader = DataLoader(dataset, batch_size=train_batch, sampler=train_sampler)
+    val_loader = DataLoader(dataset, batch_size=val_batch, sampler=val_sampler)
 
     return train_loader, val_loader
 
