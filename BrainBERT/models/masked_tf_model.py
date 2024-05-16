@@ -9,7 +9,7 @@ class MaskedTFModel(BaseModel):
     def __init__(self):
         super(MaskedTFModel, self).__init__()
 
-    def forward(self, input_specs, src_key_mask, intermediate_rep=False, rep_from_layer=-1):
+    def forward(self, input_specs, src_key_mask, intermediate_rep=True, rep_from_layer=-1):
         input_specs, pos_enc = self.input_encoding(input_specs)
         input_specs = input_specs.transpose(0,1) #nn.Transformer wants [seq, batch, dim]
         if rep_from_layer==-1:

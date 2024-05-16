@@ -20,13 +20,12 @@ class SeegDataset(Dataset):
                                                                  random_state=42)
 
     def __getitem__(self, index):
-        actual_index = self.indices[index]
-        seeg = self.seeg[actual_index]
-        first_frame = self.first_frame[actual_index]
-        movie_num = self.movie_num[actual_index]
-        clip = self.clip[actual_index]
-        clip_sub = self.clip_sub[actual_index]
-        watch_flag = self.watch_flag[actual_index]
+        seeg = self.seeg[index]
+        first_frame = self.first_frame[index]
+        movie_num = self.movie_num[index]
+        clip = self.clip[index]
+        clip_sub = self.clip_sub[index]
+        watch_flag = self.watch_flag[index]
         return seeg, first_frame, movie_num, clip, clip_sub, watch_flag
 
     def __len__(self):
