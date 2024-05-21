@@ -5,15 +5,15 @@ from tqdm import tqdm
 
 
 class SeegDataset(Dataset):
-    def __init__(self, archive, seeg='seeg', first_frame='first_frame', movie_num='movie_num', clip='clip',
+    def __init__(self, archive, seeg='seeg', first_frame='img', movie_num='movie_num', clip='clip',
                  clip_sub='clip_sub', watch_flag='watch_flag', split_ratio=0.9):
         self.archive = h5py.File(archive, 'r')
         self.seeg = self.archive[seeg]
         self.first_frame = self.archive[first_frame]
-        self.movie_num = self.archive[movie_num]
-        self.clip = self.archive[clip]
-        self.clip_sub = self.archive[clip_sub]
-        self.watch_flag = self.archive[watch_flag]
+        # self.movie_num = self.archive[movie_num]
+        # self.clip = self.archive[clip]
+        # self.clip_sub = self.archive[clip_sub]
+        # self.watch_flag = self.archive[watch_flag]
 
         self.indices = list(range(len(self.seeg)))
         self.train_indices, self.test_indices = train_test_split(self.indices, test_size=200,
@@ -22,11 +22,11 @@ class SeegDataset(Dataset):
     def __getitem__(self, index):
         seeg = self.seeg[index]
         first_frame = self.first_frame[index]
-        movie_num = self.movie_num[index]
-        clip = self.clip[index]
-        clip_sub = self.clip_sub[index]
-        watch_flag = self.watch_flag[index]
-        return seeg, first_frame, movie_num, clip, clip_sub, watch_flag
+        # movie_num = self.movie_num[index]
+        # clip = self.clip[index]
+        # clip_sub = self.clip_sub[index]
+        # watch_flag = self.watch_flag[index]
+        return seeg, first_frame
 
     def __len__(self):
         return len(self.indices)

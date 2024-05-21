@@ -11,7 +11,7 @@ class BrainBERTProcessor(torch.nn.Module):
         self.ckpt_path = model_path
         self.cfg = OmegaConf.create({"upstream_ckpt": self.ckpt_path})
         self.model = self.build_model(self.cfg)
-        self.model.eval()
+        # self.model.eval()
         init_state = torch.load(self.ckpt_path)
         self.load_model_weights(self.model, init_state['model'], False)
 
@@ -56,8 +56,7 @@ class BrainBERTProcessor(torch.nn.Module):
             inputs.append(torch.FloatTensor(linear).transpose(0, 1).to(device))
         inputs = torch.stack(inputs, dim=0).half()
         mask = torch.zeros((inputs.shape[:2])).bool().to(device)
-        with torch.no_grad():
-            with torch.autocast(device_type='cuda', dtype=torch.float16):
-                output = self.model.forward(inputs, mask, intermediate_rep=True)
+        with torch.autocast(device_type='cuda'):
+            output = self.model.forward(inputs, mask, intermediate_rep=True)
         return output
 
