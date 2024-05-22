@@ -16,6 +16,7 @@ from seeg_encoder import SeegEncoder
 from matplotlib import pyplot as plt
 
 mse_loss = MSELoss()
+nll_loss = torch.nn.NLLLoss()
 
 
 def set_seed(seed):
@@ -27,7 +28,7 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-def calculate_accuracy(similarity_matrix, topk=(5,10)):
+def calculate_accuracy(similarity_matrix, topk=(1, 5)):
     maxk = max(topk)
     batch_size = similarity_matrix.shape[0]
 
@@ -41,7 +42,7 @@ def calculate_accuracy(similarity_matrix, topk=(5,10)):
 
     res = []
     for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0)
+        correct_k = correct[:,:k].reshape(-1).float().sum(0)
         res.append(correct_k.mul_(100.0 / batch_size).item())
     return res
 
@@ -122,19 +123,29 @@ def plot(train_loss_list, val_loss_list, acc_1_list, acc_5_list, avg_weights, si
 def itm(seeg_embeds, img_embeds, similarity_matrix):
     bs = seeg_embeds.shape[0]
     weight_s2i = F.softmax(similarity_matrix, dim=1)
-    # weight_i2s = F.softmax(similarity_matrix.t(), dim=1)
+    weight_i2s = F.softmax(similarity_matrix.t(), dim=1)
 
     weight_s2i.fill_diagonal_(0)
-    # weight_i2s.fill_diagonal_(0)
+    weight_i2s.fill_diagonal_(0)
 
-    img_embed_neg = []
+    logit_list = []
     for b in range(bs):
-        neg_idx = torch.multinomial(weight_s2i[b], 1).item()
-        img_embed_neg.append(img_embeds[neg_idx])
-    img_embed_neg = torch.stack(img_embed_neg, dim=0)
-    img_embeds = torch.cat([img_embeds, img_embed_neg])
-    print(seeg_embeds.shape)
-    print(img_embeds.shape)
+        neg_img_idx = torch.multinomial(weight_s2i[b], 1).item()
+        embeds = torch.stack([img_embeds[b], img_embeds[neg_img_idx]])
+
+        logit_list.append(seeg_embeds[b] @ embeds.t())
+
+    for b in range(bs):
+        neg_seeg_idx = torch.multinomial(weight_i2s[b], 1).item()
+        embeds = torch.stack([seeg_embeds[b], seeg_embeds[neg_seeg_idx]])
+
+        logit_list.append(img_embeds[b] @ embeds.t())
+
+    logits = torch.stack(logit_list)
+    labels = torch.Tensor([[1, 0]] * (2 * bs)).to(logits.device)
+
+    # print(nll_loss(logits, labels))
+    return F.cross_entropy(logits, labels)
 
 
 
@@ -142,11 +153,12 @@ def loss_fn(pred_x, x, temperature=1):
     # loss = mse_loss(pred_x.float(), x.float())
     similarity_matrix = pred_x.float() @ (x.float() / temperature).t()
     targets = torch.arange(x.shape[0]).to(x.device)
-    loss = (
+    itc_loss = (
         F.cross_entropy(similarity_matrix, targets, label_smoothing=0.1) +
         F.cross_entropy(similarity_matrix.t(), targets, label_smoothing=0.1)
     ) / 2
-    itm(pred_x, x, similarity_matrix)
+    # itm_loss = itm(pred_x, x, similarity_matrix)
+    loss = itc_loss# + itm_loss
     return loss
 
 
@@ -281,10 +293,10 @@ def train(params, train_name):
 def main():
     params = {
         'epoch': 50,
-        'batch': 128,
+        'batch': 64,
         "lr": 4e-6,
-        "t_max": 1500,
-        "eta_min": 4e-7,
+        "t_max": 3000,
+        "eta_min": 0,
         "beta1": 0.9,
         "beta2": 0.98,
         "eps": 1.0e-6,
@@ -292,7 +304,7 @@ def main():
     for key in params:
         logger.info(key.ljust(20)+str(params[key]))
 
-    train_name = "tune_bs"  # TODO
+    train_name = "no_itm_test"  # TODO
     log_name = f'epoch{params["epoch"]}_bs{params["batch"]}_lr{params["lr"]}_tmax{params["t_max"]}_etamin{params["eta_min"]}'
     logger.add(f'../log/{train_name}/{log_name}.log', format="{time:YYYY-MM-DD HH:MM:SS} | {level} | \t{message}")
     logger.info("train name".ljust(20) + train_name)
